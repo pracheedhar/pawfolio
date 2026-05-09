@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { vetServices, trainingServices } from '../data/mockData';
+import { vetServices, trainingServices, groomingServices } from '../data/mockData';
 
 const BookingDetails = () => {
   const { serviceId } = useParams();
   const navigate = useNavigate();
 
-  // Find service in either vet or training
-  const service = vetServices.find(s => s.id === serviceId) || trainingServices.find(s => s.id === serviceId);
+  // Find service in vet, training, or grooming lists
+  const service =
+    vetServices.find(s => s.id === serviceId) ||
+    trainingServices.find(s => s.id === serviceId) ||
+    groomingServices.find(s => s.id === serviceId);
   const serviceName = service?.name || 'Selected Service';
 
   const [formData, setFormData] = useState({

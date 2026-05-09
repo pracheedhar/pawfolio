@@ -12,6 +12,7 @@ import About from './pages/About';
 import ProfileFeed from './pages/ProfileFeed';
 import VetListings from './pages/VetListings';
 import TrainingListings from './pages/TrainingListings';
+import GroomingListings from './pages/GroomingListings';
 import BookingDetails from './pages/BookingDetails';
 import Payment from './pages/Payment';
 
@@ -29,6 +30,7 @@ function App() {
               <Route path="/profile" element={<ProfileFeed />} />
               <Route path="/vets" element={<VetListings />} />
               <Route path="/training" element={<TrainingListings />} />
+              <Route path="/grooming" element={<GroomingListings />} />
               <Route path="/booking/:serviceId" element={<BookingDetails />} />
               <Route path="/payment/:bookingId" element={<Payment />} />
             </Routes>

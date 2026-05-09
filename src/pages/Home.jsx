@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import parkImg from '../assets/parkimg.png';
+import dogWalkerImg from '../assets/dog-walker.png';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -17,11 +19,11 @@ const Home = () => {
       <div 
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: 'url("/src/assets/parkimg.png")', // Exact park image provided by user
+          backgroundImage: `url(${parkImg})`,
         }}
       >
-        {/* Dark gradient overlay starting from the left */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent"></div>
+        {/* Dark gradient overlay from left */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-black/10"></div>
       </div>
 
       {/* Content Container */}
@@ -39,7 +41,7 @@ const Home = () => {
               Welcome to <br /> Pawfolio-
             </h1>
             <p className="text-2xl md:text-[2.75rem] lg:text-[3.25rem] font-semibold tracking-tight mt-4">
-              Connect, Share & Love Pets
+              Connect, Share &amp; Love Pets
             </p>
           </motion.div>
 
@@ -48,22 +50,13 @@ const Home = () => {
             initial={{ x: 50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.8 }}
-            className="hidden lg:flex flex-col items-center justify-center relative right-0 bottom-[-20px] w-[500px]"
+            className="hidden lg:flex items-end justify-center relative w-[500px]"
           >
-             <img 
-               src={dogWalkerImg} 
-               alt="Person walking dog sketch" 
-               className="w-[450px] h-auto object-contain drop-shadow-lg pointer-events-none"
-               style={{ 
-                 /* 
-                   We use contrast(200%) to crush the white background of the JPEG 
-                   into pure white so that invert(1) turns it into PURE black. 
-                   This prevents the "black box" artifact when using mixBlendMode: 'screen' 
-                 */
-                 filter: 'grayscale(100%) contrast(500%) invert(1)',
-                 mixBlendMode: 'screen'
-               }}
-             /> 
+            <img 
+              src={dogWalkerImg} 
+              alt="Person walking dog sketch" 
+              className="w-[450px] h-auto object-contain pointer-events-none"
+            /> 
           </motion.div>
         </div>
 

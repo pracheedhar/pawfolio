@@ -38,16 +38,6 @@ const VetListings = () => {
           ))}
         </div>
 
-        {/* Small dog sketch placeholder */}
-        <div className="mt-16 flex justify-center">
-          <svg width="200" height="100" viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-             {/* Replace with actual dog sketch path */}
-             <path d="M50 80 C50 60 70 60 70 80 C70 100 50 100 50 80 Z" stroke="black" strokeWidth="2" fill="none"/>
-             <path d="M70 80 L120 80 C140 80 150 70 150 50 C150 30 140 20 120 20 L80 20 C60 20 50 30 50 50 L50 80" stroke="black" strokeWidth="2" fill="none"/>
-             <path d="M120 20 C130 10 140 10 150 20" stroke="black" strokeWidth="2" fill="none"/>
-             <path d="M50 50 L30 60" stroke="black" strokeWidth="2" fill="none"/>
-          </svg>
-        </div>
       </div>
     </motion.div>
   );
