@@ -38,7 +38,7 @@ export const vetServices = [
   {
     id: 'v4',
     name: 'FurCare',
-    image: 'https://images.unsplash.com/photo-1548767797-d8c844163c4a?auto=format&fit=crop&q=80&w=800',
+    image: 'https://i.pinimg.com/736x/c0/a6/d1/c0a6d1132b4c95e117644f1000253b67.jpg',
   },
 ];
 
@@ -46,12 +46,12 @@ export const trainingServices = [
   {
     id: 't1',
     name: 'Pet Trainer Hub',
-    image: 'https://images.unsplash.com/photo-1587300003388-59208cb962cb?auto=format&fit=crop&q=80&w=800',
+    image: 'https://i.pinimg.com/1200x/26/85/c6/2685c629995ec7d43be7feada5b1e9e2.jpg',
   },
   {
     id: 't2',
     name: 'Happy Pets Training',
-    image: 'https://images.unsplash.com/photo-1507146153580-69a1fe6d8aa1?auto=format&fit=crop&q=80&w=800',
+    image: 'https://i.pinimg.com/736x/9f/f3/61/9ff361b340a57275caf2efb5dce2857e.jpg',
   },
   {
     id: 't3',
@@ -69,7 +69,7 @@ export const groomingServices = [
   {
     id: 'g1',
     name: 'PawSpa Grooming',
-    image: 'https://images.unsplash.com/photo-1601758174493-ed3f0c548bc0?auto=format&fit=crop&q=80&w=800',
+    image: 'https://i.pinimg.com/736x/ef/bd/1e/efbd1e50fd5148e3979a945170ea8db3.jpg',
   },
   {
     id: 'g2',
@@ -84,7 +84,7 @@ export const groomingServices = [
   {
     id: 'g4',
     name: 'Shine & Shine Studio',
-    image: 'https://images.unsplash.com/photo-1587300003388-59208cb962cb?auto=format&fit=crop&q=80&w=800',
+    image: 'https://i.pinimg.com/1200x/1d/0e/a6/1d0ea6596b14da2fb98656529166f716.jpg',
   },
 ];
 
@@ -94,5 +94,5 @@ export const profilePosts = [
   { id: 3, image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=500' },
   { id: 4, image: 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&q=80&w=500' },
   { id: 5, image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=500' },
-  { id: 6, image: 'https://images.unsplash.com/photo-1537151608804-ea2f1fa8c0f7?auto=format&fit=crop&q=80&w=500' },
+  { id: 6, image: 'https://i.pinimg.com/1200x/4f/3b/5d/4f3b5d24c65e6aaf160de77d51ede252.jpg' },
 ];
