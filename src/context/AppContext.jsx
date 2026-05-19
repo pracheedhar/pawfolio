@@ -4,8 +4,8 @@ const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
   const [user, setUser] = useState({
-    name: 'twitter',
-    avatar: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=150', // Cute dog placeholder
+    name: 'Ocean',
+    avatar: 'https://i1-e.pinimg.com/1200x/2b/6f/87/2b6f8700f08024520fff07d1e2ddd3a2.jpg',
   });
 
   const [cart, setCart] = useState([]);

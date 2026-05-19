@@ -8,13 +8,13 @@ export const discoverCategories = [
   {
     id: 'veterinarian',
     title: 'Veterinarian',
-    image: 'https://images.unsplash.com/photo-1559190394-df5a28aab5c5?auto=format&fit=crop&q=80&w=800',
+    image: 'https://i1-e.pinimg.com/1200x/9e/b4/7c/9eb47c3f14965bdd6d9c05a1a7288eeb.jpg',
     path: '/vets',
   },
   {
     id: 'training',
     title: 'Training',
-    image: 'https://i.pinimg.com/1200x/d9/54/fe/d954fe8e231840089673d5116a402832.jpg',
+    image: 'https://i1-e.pinimg.com/736x/22/a7/0b/22a70be7c9eb5fb3f52646add7e44552.jpg',
     path: '/training',
   },
 ];
@@ -28,7 +28,7 @@ export const vetServices = [
   {
     id: 'v2',
     name: 'PawMed',
-    image: 'https://images.unsplash.com/photo-1612531385446-f7e6d131e1d0?auto=format&fit=crop&q=80&w=800',
+    image: 'https://i1-e.pinimg.com/1200x/3e/9d/ce/3e9dce004a33f9c3152dc0778a89dfd5.jpg',
   },
   {
     id: 'v3',
@@ -79,7 +79,7 @@ export const groomingServices = [
   {
     id: 'g3',
     name: 'The Pampered Pet',
-    image: 'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=800',
+    image: 'https://i.pinimg.com/736x/40/92/9d/40929d11f467e45066e6e25fb29b8ca1.jpg',
   },
   {
     id: 'g4',
@@ -89,10 +89,10 @@ export const groomingServices = [
 ];
 
 export const profilePosts = [
-  { id: 1, image: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=500' },
-  { id: 2, image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=500' },
-  { id: 3, image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=500' },
-  { id: 4, image: 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&q=80&w=500' },
-  { id: 5, image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=500' },
-  { id: 6, image: 'https://i.pinimg.com/1200x/4f/3b/5d/4f3b5d24c65e6aaf160de77d51ede252.jpg' },
+  { id: 1, image: 'https://i1-e.pinimg.com/736x/05/2c/11/052c118e9639519e3f4611ea5d36a9c2.jpg' },
+  { id: 2, image: 'https://i1-e.pinimg.com/1200x/b4/24/56/b42456ea7597ea14940df10f38010905.jpg' },
+  { id: 3, image: 'https://i.pinimg.com/736x/c3/e0/86/c3e0860f8f8f2682d45fc93cf832aaa3.jpg' },
+  { id: 4, image: 'https://i1-e.pinimg.com/1200x/e2/ea/d1/e2ead1999c474d7cd14f7de51e18c3eb.jpg' },
+  { id: 5, image: 'https://i.pinimg.com/736x/e5/be/a7/e5bea7f30bf6718abffd752274f42e3a.jpg' },
+  { id: 6, image: 'https://i1-e.pinimg.com/1200x/42/cb/89/42cb893364586a018fc49fb6c3e8c28f.jpg' },
 ];

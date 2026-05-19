@@ -18,7 +18,7 @@ const About = () => {
           {/* Image Section */}
           <div className="w-full md:w-1/2 h-64 md:h-auto relative">
             <img 
-              src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=1000" 
+              src="https://i1-e.pinimg.com/1200x/ab/ed/12/abed12c5007ae6def875b170727cb6f8.jpg" 
               alt="Happy pet owner" 
               className="absolute inset-0 w-full h-full object-cover"
             />

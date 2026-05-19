@@ -33,7 +33,8 @@ const Payment = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
-      className="min-h-[calc(100vh-4rem)] w-full py-12 bg-gray-50 flex justify-center items-center"
+      className="min-h-[calc(100vh-4rem)] w-full py-12 flex justify-center items-center"
+      style={{ backgroundImage: 'repeating-linear-gradient(90deg, #E6F0F9, #E6F0F9 20px, #ffffff 20px, #ffffff 40px)' }}
     >
       <div className="max-w-6xl w-full px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row border border-gray-100">
@@ -46,7 +47,7 @@ const Payment = () => {
               <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 mb-8 shadow-sm">
                 <div className="flex items-center gap-4 mb-6">
                   <img 
-                    src="https://images.unsplash.com/photo-1596272875886-f6313ed6c99f?auto=format&fit=crop&q=80&w=150" 
+                    src="https://i1-e.pinimg.com/1200x/3e/9d/ce/3e9dce004a33f9c3152dc0778a89dfd5.jpg" 
                     alt="Service" 
                     className="w-20 h-20 rounded-xl object-cover"
                   />

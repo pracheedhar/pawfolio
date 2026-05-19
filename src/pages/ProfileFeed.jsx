@@ -26,7 +26,7 @@ const ProfileFeed = () => {
           </div>
           
           <div className="flex-1 text-center md:text-left">
-            <h2 className="text-3xl font-bold text-black mb-4">{user?.name || 'John Doe'}</h2>
+            <h2 className="text-3xl font-bold text-black mb-4">{user?.name || 'Ocean'}</h2>
             
             <div className="flex justify-center md:justify-start space-x-8 mb-6">
               <div className="text-center">
@@ -44,7 +44,7 @@ const ProfileFeed = () => {
             </div>
             
             <div className="max-w-md mx-auto md:mx-0">
-              <p className="text-black font-medium mb-1">Max & Bella 🐾</p>
+              <p className="text-black font-medium mb-1">Ocean 🌊🐚✨</p>
               <p className="text-gray-600">Dog lover | Coffee addict | Exploring the world one bark at a time. 🌍🐶</p>
             </div>
           </div>
