@@ -1,11 +1,13 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import ServiceCard from '../components/ServiceCard';
-import { discoverCategories } from '../data/mockData';
+import { useResource } from '../lib/useResource';
+import DataState from '../components/DataState';
 
 const Discover = () => {
   const navigate = useNavigate();
+  const { data, loading, error, reload } = useResource('/categories?limit=100');
+  const discoverCategories = data?.items || [];
 
   return (
     <motion.div
@@ -23,6 +25,7 @@ const Discover = () => {
             Book your favourites
           </h2>
           
+        <DataState loading={loading} error={error} empty={!discoverCategories.length} retry={reload} />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {discoverCategories.map((category, index) => (
               <motion.div

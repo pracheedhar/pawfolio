@@ -1,7 +1,8 @@
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const About = () => {
+  const navigate = useNavigate();
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -57,7 +58,7 @@ const About = () => {
               </ul>
               
               <div className="mt-10">
-                <button className="bg-[#6A92C5] hover:bg-[#587ea8] text-white px-8 py-3 rounded-full font-semibold transition-colors">
+                <button onClick={() => navigate('/signup')} className="bg-[#6A92C5] hover:bg-[#587ea8] text-white px-8 py-3 rounded-full font-semibold transition-colors">
                   Join Our Community
                 </button>
               </div>

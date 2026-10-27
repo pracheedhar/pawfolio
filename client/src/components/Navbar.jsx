@@ -1,54 +1,26 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Bell, Calendar, Scissors, Stethoscope, Dumbbell, X } from 'lucide-react';
+import { Search, Bell, Calendar, X } from 'lucide-react';
+import { api, mediaUrl } from '../lib/api';
+import { useResource } from '../lib/useResource';
+import DataState from './DataState';
 import { useAppContext } from '../context/AppContext';
 
-const notifications = [
-  {
-    id: 1,
-    icon: <Stethoscope className="h-4 w-4 text-blue-500" />,
-    title: 'Vet Appointment',
-    desc: 'Dr. Smith scheduled for Max — Tomorrow 10:00 AM',
-    time: '2h ago',
-    color: 'bg-blue-50',
-  },
-  {
-    id: 2,
-    icon: <Scissors className="h-4 w-4 text-pink-500" />,
-    title: 'Grooming Session',
-    desc: 'Bella\'s grooming confirmed at PawSpa — Fri 2:00 PM',
-    time: '5h ago',
-    color: 'bg-pink-50',
-  },
-  {
-    id: 3,
-    icon: <Calendar className="h-4 w-4 text-green-500" />,
-    title: 'Vet Follow-up',
-    desc: 'Vaccination booster due for Max next week',
-    time: '1d ago',
-    color: 'bg-green-50',
-  },
-  {
-    id: 4,
-    icon: <Dumbbell className="h-4 w-4 text-orange-500" />,
-    title: 'Training Class',
-    desc: 'Agility training with Coach Alex — Sat 9:00 AM',
-    time: '1d ago',
-    color: 'bg-orange-50',
-  },
-  {
-    id: 5,
-    icon: <Stethoscope className="h-4 w-4 text-purple-500" />,
-    title: 'Medic Reminder',
-    desc: 'Flea & tick medicine due for Bella this Sunday',
-    time: '2d ago',
-    color: 'bg-purple-50',
-  },
-];
-
 const Navbar = () => {
-  const { user } = useAppContext();
   const location = useLocation();
+  const { user, logout, notify } = useAppContext();
+  const [query, setQuery] = useState('');
+  const [search, setSearch] = useState('');
+  useEffect(() => { const timer = setTimeout(() => setSearch(query), 300); return () => clearTimeout(timer); }, [query]);
+  const results = useResource('/services?limit=8&search=' + encodeURIComponent(search));
+  const [notifications, setNotifications] = useState([]);
+  const [notificationError, setNotificationError] = useState('');
+  useEffect(() => {
+    let active = true;
+    if (user) api('/notifications?limit=100').then(data => { if (active) setNotifications(data.items); }).catch(error => { if (active) setNotificationError(error.message); });
+    return () => { active = false; };
+  }, [user, location.pathname]);
+
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef(null);
 
@@ -109,19 +81,27 @@ const Navbar = () => {
               <input
                 type="text"
                 placeholder="Search..."
+                aria-label="Search services"
+                value={query}
+                onChange={event => setQuery(event.target.value)}
                 className="block w-full pl-10 pr-3 py-1.5 border border-transparent rounded-full leading-5 bg-[#B0C4DE]/40 placeholder-gray-500 focus:outline-none focus:bg-white focus:border-[#B0C4DE] focus:ring-1 focus:ring-[#B0C4DE] sm:text-sm transition-colors"
               />
             </div>
 
+            {query && <div className="absolute top-16 right-4 bg-white border rounded-xl shadow-xl p-4 w-80 z-50">
+              <DataState loading={results.loading} error={results.error} empty={!results.data?.items.length} retry={results.reload} />
+              {results.data?.items.map(service => <Link key={service.id} to={`/booking/${service.id}`} onClick={() => setQuery('')} className="block py-2 hover:text-[#6A92C5]">{service.name}</Link>)}
+            </div>}
             {/* Notification */}
             <div className="relative" ref={notifRef}>
               <button
                 id="notification-bell"
+                aria-label="Notifications"
                 onClick={() => setNotifOpen((prev) => !prev)}
                 className="text-gray-500 hover:text-black transition-colors p-1 relative"
               >
                 <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
+                {user && notifications.some(n => !n.read) && <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full border border-white"></span>}
               </button>
 
               {/* Dropdown */}
@@ -140,26 +120,28 @@ const Navbar = () => {
 
                   {/* Notification Items */}
                   <div className="divide-y divide-gray-50 max-h-80 overflow-y-auto">
-                    {notifications.map((n) => (
+                    {!user && <Link to="/login" className="block p-4 text-sm">Log in to see notifications</Link>}
+                    {user && <DataState error={notificationError} empty={!notifications.length} />}
+                    {user && notifications.map((n) => (
                       <div
                         key={n.id}
                         className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
                       >
-                        <div className={`flex-shrink-0 rounded-full p-2 mt-0.5 ${n.color}`}>
-                          {n.icon}
+                        <div className={`flex-shrink-0 rounded-full p-2 mt-0.5 bg-blue-50`}>
+                          <Calendar className="h-4 w-4 text-blue-500" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-900">{n.title}</p>
                           <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{n.desc}</p>
                         </div>
-                        <span className="text-xs text-gray-400 whitespace-nowrap mt-0.5">{n.time}</span>
+                        <span className="text-xs text-gray-400 whitespace-nowrap mt-0.5">{new Date(n.createdAt).toLocaleDateString()}</span>
                       </div>
                     ))}
                   </div>
 
                   {/* Footer */}
                   <div className="px-4 py-3 border-t border-gray-100 text-center">
-                    <button className="text-xs text-[#7a9bbf] font-medium hover:text-black transition-colors">
+                    <button onClick={async () => { try { await api('/notifications/read-all', { method: 'PATCH', body: {} }); setNotifications(items => items.map(n => ({ ...n, read: true }))); notify('Notifications marked as read'); } catch (error) { notify(error.message); } }} disabled={!user} className="text-xs text-[#7a9bbf] font-medium hover:text-black transition-colors">
                       Mark all as read
                     </button>
                   </div>
@@ -167,10 +149,11 @@ const Navbar = () => {
               )}
             </div>
 
+            {user && <button onClick={logout} className="text-sm text-gray-500">Log out</button>}
             {/* Profile */}
-            <Link to="/profile" className="flex items-center">
+            <Link to={user ? "/profile" : "/login"} className="flex items-center">
               <img
-                src={user?.avatar || 'https://i.pravatar.cc/150?img=11'}
+                src={mediaUrl(user?.avatar) || '/favicon.svg'}
                 alt="Profile"
                 className="h-8 w-8 rounded-full object-cover border border-gray-200"
               />

@@ -1,8 +1,6 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 
-const ServiceCard = ({ id, title, image, buttonText, onClick }) => {
+const ServiceCard = ({ title, image, buttonText, onClick }) => {
   return (
     <motion.div
       whileHover={{ y: -10 }}

@@ -1,32 +1,29 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { api, mediaUrl } from '../lib/api';
+import { useResource } from '../lib/useResource';
+import { useAppContext } from '../context/AppContext';
+import DataState from '../components/DataState';
 
 const Payment = () => {
-  const { state } = useLocation();
   const navigate = useNavigate();
   const { bookingId } = useParams();
-  
-  const serviceName = state?.serviceName || 'Premium Service';
-  const ownerName = state?.formData?.ownerName || 'Valued Customer';
-
-  const [paymentData, setPaymentData] = useState({
-    cardName: '',
-    cardNumber: '',
-    expiry: '',
-    cvc: ''
-  });
-
-  const handleChange = (e) => {
-    setPaymentData({ ...paymentData, [e.target.name]: e.target.value });
+  const { notify } = useAppContext();
+  const bookingResource = useResource(`/bookings/${bookingId}`);
+  const booking = bookingResource.data;
+  const serviceResource = useResource(`/services/${booking?.service || 'loading'}`);
+  const [busy, setBusy] = useState(false);
+  const money = cents => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format((cents || 0) / 100);
+  const handlePayment = async event => {
+    event.preventDefault(); if (busy) return; setBusy(true);
+    try {
+      await api(`/bookings/${bookingId}/payment`, { method: 'POST', body: {} });
+      notify('Booking confirmed in demo mode. No money was charged.');
+      navigate('/profile');
+    } catch (error) { notify(error.message); } finally { setBusy(false); }
   };
-
-  const handlePayment = (e) => {
-    e.preventDefault();
-    // Simulate successful payment
-    alert(`Payment successful! Your booking (${bookingId}) is confirmed, ${ownerName}.`);
-    navigate('/');
-  };
+  if (bookingResource.loading || bookingResource.error) return <DataState loading={bookingResource.loading} error={bookingResource.error} retry={bookingResource.reload} />;
 
   return (
     <motion.div
@@ -47,33 +44,33 @@ const Payment = () => {
               <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 mb-8 shadow-sm">
                 <div className="flex items-center gap-4 mb-6">
                   <img 
-                    src="https://i1-e.pinimg.com/1200x/3e/9d/ce/3e9dce004a33f9c3152dc0778a89dfd5.jpg" 
+                    src={mediaUrl(serviceResource.data?.image) || "/favicon.svg"} 
                     alt="Service" 
                     className="w-20 h-20 rounded-xl object-cover"
                   />
                   <div>
-                    <h3 className="font-bold text-xl text-black">{serviceName}</h3>
-                    <p className="text-gray-600">June 16, 2026 • 10:00 AM</p>
+                    <h3 className="font-bold text-xl text-black">{serviceResource.data?.name || 'Service'}</h3>
+                    <p className="text-gray-600">{booking.date} • {booking.time}</p>
                   </div>
                 </div>
 
                 <div className="space-y-3 text-gray-700">
                   <div className="flex justify-between">
                     <span>Service Fee</span>
-                    <span className="font-medium">$85.00</span>
+                    <span className="font-medium">{money(booking.price)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Taxes</span>
-                    <span className="font-medium">$8.50</span>
+                    <span className="font-medium">$0.00</span>
                   </div>
                   <div className="flex justify-between text-green-600">
-                    <span>Discount (PAW10)</span>
-                    <span className="font-medium">-$8.50</span>
+                    <span>Discount</span>
+                    <span className="font-medium">$0.00</span>
                   </div>
                   <hr className="border-gray-300 my-4" />
                   <div className="flex justify-between text-xl font-bold text-black">
                     <span>Total</span>
-                    <span>$85.00</span>
+                    <span>{money(booking.price)}</span>
                   </div>
                 </div>
               </div>
@@ -85,82 +82,22 @@ const Payment = () => {
 
           {/* Payment Form (Right) */}
           <div className="w-full lg:w-7/12 p-8 md:p-12 lg:pl-16">
-            <h2 className="text-3xl font-bold text-black mb-2">Payment Details</h2>
-            <p className="text-gray-500 mb-8">Complete your booking by providing your payment information.</p>
+            <h2 className="text-3xl font-bold text-black mb-2">Demo Confirmation</h2>
+            <p className="text-gray-500 mb-8">Confirm your booking in demo mode. No money will be charged. Real payments require a configured payment provider.</p>
             
             <form onSubmit={handlePayment} className="space-y-6 max-w-md">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Cardholder Name</label>
-                <input 
-                  type="text" 
-                  name="cardName"
-                  required
-                  value={paymentData.cardName}
-                  onChange={handleChange}
-                  placeholder="John Doe"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#6A92C5] focus:border-transparent transition-all"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
-                <div className="relative">
-                  <input 
-                    type="text" 
-                    name="cardNumber"
-                    required
-                    maxLength="19"
-                    value={paymentData.cardNumber}
-                    onChange={handleChange}
-                    placeholder="0000 0000 0000 0000"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#6A92C5] focus:border-transparent transition-all"
-                  />
-                  {/* Dummy card icon */}
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex space-x-1">
-                    <div className="w-6 h-4 bg-gray-200 rounded-sm"></div>
-                    <div className="w-6 h-4 bg-gray-200 rounded-sm"></div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex gap-4">
-                <div className="w-1/2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
-                  <input 
-                    type="text" 
-                    name="expiry"
-                    required
-                    placeholder="MM/YY"
-                    value={paymentData.expiry}
-                    onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#6A92C5] focus:border-transparent transition-all"
-                  />
-                </div>
-                <div className="w-1/2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">CVC</label>
-                  <input 
-                    type="text" 
-                    name="cvc"
-                    required
-                    maxLength="4"
-                    placeholder="123"
-                    value={paymentData.cvc}
-                    onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#6A92C5] focus:border-transparent transition-all"
-                  />
-                </div>
-              </div>
-              
+              <p className="rounded-xl bg-[#E6F0F9] p-4">{booking.ownerName}, your booking is {booking.status}. This demonstration does not collect card details.</p>
               <button 
                 type="submit"
+                disabled={busy || booking.status !== 'pending'}
                 className="w-full bg-[#6A92C5] hover:bg-[#587ea8] text-white py-4 rounded-xl font-bold text-lg transition-colors shadow-md mt-4"
               >
-                Pay $85.00
+                {busy ? 'Confirming…' : `Confirm demo booking · ${money(booking.price)}`}
               </button>
             </form>
             
             <p className="text-center text-sm text-gray-500 mt-6 flex items-center justify-center gap-1">
-              <span>🔒</span> Payments are secure and encrypted.
+              <span>🔒</span> Demo only · No charge or card information collected.
             </p>
           </div>
         </div>

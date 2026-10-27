@@ -1,11 +1,13 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import ServiceCard from '../components/ServiceCard';
-import { trainingServices } from '../data/mockData';
+import { useResource } from '../lib/useResource';
+import DataState from '../components/DataState';
 
 const TrainingListings = () => {
   const navigate = useNavigate();
+  const { data, loading, error, reload } = useResource('/services?category=training&limit=100');
+  const trainingServices = data?.items || [];
 
   return (
     <motion.div
@@ -19,6 +21,7 @@ const TrainingListings = () => {
           Expert Training at Your Fingertips.
         </h2>
         
+        <DataState loading={loading} error={error} empty={!trainingServices.length} retry={reload} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {trainingServices.map((service, index) => (
             <motion.div

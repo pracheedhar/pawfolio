@@ -1,42 +1,47 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { vetServices, trainingServices, groomingServices } from '../data/mockData';
-
-const TIME_SLOTS = [
-  '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM',
-  '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM',
-  '4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM',
-];
+import { api } from '../lib/api';
+import { useResource } from '../lib/useResource';
+import { useAppContext } from '../context/AppContext';
+import DataState from '../components/DataState';
 
 const BookingDetails = () => {
   const { serviceId } = useParams();
   const navigate = useNavigate();
 
-  const service =
-    vetServices.find(s => s.id === serviceId) ||
-    trainingServices.find(s => s.id === serviceId) ||
-    groomingServices.find(s => s.id === serviceId);
-  const serviceName = service?.name || 'Selected Service';
-
-  const [step, setStep] = useState('calendar'); // 'calendar' | 'time'
-  const [selectedDate, setSelectedDate] = useState(16);
+  const { notify, user } = useAppContext();
+  const serviceResource = useResource(`/services/${serviceId}`);
+  const serviceName = serviceResource.data?.name || 'Selected Service';
+  const [step, setStep] = useState('calendar');
+  const [selectedDate, setSelectedDate] = useState(new Date().toLocaleDateString('en-CA'));
   const [selectedTime, setSelectedTime] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const availability = useResource(`/services/${serviceId}/availability?date=${selectedDate}`);
+  const TIME_SLOTS = availability.data || [];
 
   const [formData, setFormData] = useState({
-    ownerName: '',
+    ownerName: user?.name || '',
     phoneNumber: '',
-    email: '',
+    email: user?.email || '',
   });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const bookingId = Math.random().toString(36).substring(7);
-    navigate(`/payment/${bookingId}`, { state: { serviceName, formData, selectedDate, selectedTime } });
+    const form = document.getElementById('booking-form');
+    if (!form.reportValidity()) return;
+    if (!selectedTime || !TIME_SLOTS.includes(selectedTime)) { notify('Choose an available appointment time'); return; }
+    if (busy) return;
+    setBusy(true);
+    try {
+      const booking = await api('/bookings', { method: 'POST', body: { ...formData, service: serviceId, date: selectedDate, time: selectedTime } });
+      notify('Booking reserved');
+      navigate(`/payment/${booking.id}`);
+    } catch (error) { notify(error.message); availability.reload(); } finally { setBusy(false); }
   };
 
   const panelVariants = {
@@ -44,6 +49,8 @@ const BookingDetails = () => {
     center: { x: 0, opacity: 1, transition: { duration: 0.35, ease: 'easeOut' } },
     exit: (dir) => ({ x: dir === 'forward' ? -60 : 60, opacity: 0, transition: { duration: 0.25, ease: 'easeIn' } }),
   };
+
+  if (serviceResource.loading || serviceResource.error) return <DataState loading={serviceResource.loading} error={serviceResource.error} retry={serviceResource.reload} />;
 
   return (
     <motion.div
@@ -79,35 +86,8 @@ const BookingDetails = () => {
                 exit="exit"
                 className="glass-panel p-8 flex flex-col h-full"
               >
-                {/* Header */}
-                <div className="flex justify-between items-center mb-6 text-white">
-                  <h3 className="text-3xl font-serif">June</h3>
-                  <h3 className="text-3xl text-red-500 font-serif">2026</h3>
-                </div>
-
-                {/* Weekday labels */}
-                <div className="grid grid-cols-7 gap-2 text-center text-white font-medium mb-4">
-                  <div>M</div><div>Tu</div><div>W</div><div>T</div><div>F</div>
-                  <div className="text-blue-300">S</div>
-                  <div className="text-blue-300">Sn</div>
-                </div>
-
-                {/* Day Grid */}
-                <div className="grid grid-cols-7 gap-2 text-center text-white">
-                  {[...Array(31)].map((_, i) => (
-                    <div
-                      key={i}
-                      onClick={() => setSelectedDate(i + 1)}
-                      className={`p-2 rounded-full cursor-pointer transition-colors hover:bg-white/20
-                        ${selectedDate === i + 1
-                          ? 'text-red-500 font-bold bg-white/10'
-                          : ''
-                        }`}
-                    >
-                      {i + 1}
-                    </div>
-                  ))}
-                </div>
+                <h3 className="text-3xl font-serif text-white mb-6">Choose your date</h3>
+                <input aria-label="Appointment date" type="date" min={new Date().toLocaleDateString('en-CA')} value={selectedDate} onChange={event => { if (event.target.value) { setSelectedDate(event.target.value); setSelectedTime(null); } }} className="p-4 rounded-xl w-full" />
 
                 <div className="mt-auto pt-8 flex justify-center">
                   <button
@@ -130,8 +110,8 @@ const BookingDetails = () => {
               >
                 {/* Header */}
                 <div className="flex justify-between items-center mb-6 text-white">
-                  <h3 className="text-3xl font-serif">June {selectedDate}</h3>
-                  <h3 className="text-3xl text-red-500 font-serif">2026</h3>
+                  <h3 className="text-3xl font-serif">{selectedDate}</h3>
+                  <h3 className="text-3xl text-red-500 font-serif"></h3>
                 </div>
 
                 {/* Label row */}
@@ -143,6 +123,7 @@ const BookingDetails = () => {
 
                 {/* Time Slot Grid */}
                 <div className="grid grid-cols-3 gap-3 text-center text-white">
+                  <DataState loading={availability.loading} error={availability.error} empty={!TIME_SLOTS.length} retry={availability.reload} />
                   {TIME_SLOTS.map((slot) => (
                     <div
                       key={slot}
@@ -167,7 +148,7 @@ const BookingDetails = () => {
                   </button>
                   <button
                     onClick={handleSubmit}
-                    disabled={!selectedTime}
+                    disabled={!selectedTime || busy}
                     className="bg-[#6A92C5] hover:bg-[#587ea8] disabled:opacity-40 text-white px-8 py-2 rounded-full font-medium transition-colors w-32 shadow-lg"
                   >
                     Confirm
@@ -186,12 +167,13 @@ const BookingDetails = () => {
           className="flex flex-col w-full md:w-1/2 justify-between"
         >
           <div className="glass-panel p-8 mb-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form id="booking-form" onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-white text-lg font-medium mb-2">Owner :</label>
                 <input
                   type="text"
                   name="ownerName"
+                  minLength={2} maxLength={80}
                   required
                   value={formData.ownerName}
                   onChange={handleChange}
@@ -203,6 +185,7 @@ const BookingDetails = () => {
                 <input
                   type="tel"
                   name="phoneNumber"
+                  pattern="[+0-9 ()-]{7,20}"
                   required
                   value={formData.phoneNumber}
                   onChange={handleChange}
@@ -214,6 +197,7 @@ const BookingDetails = () => {
                 <input
                   type="email"
                   name="email"
+                  maxLength={254}
                   required
                   value={formData.email}
                   onChange={handleChange}
@@ -228,9 +212,10 @@ const BookingDetails = () => {
             <h2 className="text-4xl font-bold mb-6">{serviceName}</h2>
             <button
               onClick={handleSubmit}
+              disabled={busy || !serviceResource.data}
               className="bg-[#6A92C5] hover:bg-[#587ea8] text-white px-12 py-3 rounded-full font-bold text-xl transition-colors shadow-xl"
             >
-              Book Now
+              {busy ? 'Booking…' : 'Book Now'}
             </button>
           </div>
         </motion.div>
