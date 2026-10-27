@@ -2,7 +2,8 @@ export const discoverCategories = [
   {
     id: 'grooming',
     title: 'Grooming',
-    image: 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=800',
+    image:
+      'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=800',
     path: '/grooming',
   },
   {
@@ -23,7 +24,8 @@ export const vetServices = [
   {
     id: 'v1',
     name: 'VetCare',
-    image: 'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=800',
+    image:
+      'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=800',
   },
   {
     id: 'v2',
@@ -33,7 +35,8 @@ export const vetServices = [
   {
     id: 'v3',
     name: 'Animedic',
-    image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=800',
+    image:
+      'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=800',
   },
   {
     id: 'v4',
@@ -56,12 +59,14 @@ export const trainingServices = [
   {
     id: 't3',
     name: 'Paws Training Center',
-    image: 'https://images.unsplash.com/photo-1601758177266-bc599de87707?auto=format&fit=crop&q=80&w=800',
+    image:
+      'https://images.unsplash.com/photo-1601758177266-bc599de87707?auto=format&fit=crop&q=80&w=800',
   },
   {
     id: 't4',
     name: 'Smart Dog Training',
-    image: 'https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?auto=format&fit=crop&q=80&w=800',
+    image:
+      'https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?auto=format&fit=crop&q=80&w=800',
   },
 ];
 
@@ -74,7 +79,8 @@ export const groomingServices = [
   {
     id: 'g2',
     name: 'Fluffy Cuts',
-    image: 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=800',
+    image:
+      'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=800',
   },
   {
     id: 'g3',

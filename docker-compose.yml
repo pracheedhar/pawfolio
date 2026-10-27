@@ -1,0 +1,41 @@
+services:
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    environment:
+      PORT: 4000
+      MONGO_URI: mongodb://mongo:27017/pawfolio
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in your shell or root .env}
+      JWT_EXPIRES_IN: 7d
+      CLIENT_URL: http://localhost:8080
+      NODE_ENV: development
+      UPLOAD_DIR: uploads
+      UPLOAD_PROVIDER: local
+    ports:
+      - "4000:4000"
+    volumes:
+      - uploads:/app/server/uploads
+    depends_on:
+      mongo:
+        condition: service_healthy
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - server
+volumes:
+  mongo-data:
+  uploads:

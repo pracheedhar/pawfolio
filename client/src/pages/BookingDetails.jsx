@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useResource } from '../lib/useResource';
-import { useAppContext } from '../context/AppContext';
+import { useAppContext } from '../context/useAppContext';
 import DataState from '../components/DataState';
 
 const BookingDetails = () => {
@@ -34,23 +34,45 @@ const BookingDetails = () => {
     e.preventDefault();
     const form = document.getElementById('booking-form');
     if (!form.reportValidity()) return;
-    if (!selectedTime || !TIME_SLOTS.includes(selectedTime)) { notify('Choose an available appointment time'); return; }
+    if (!selectedTime || !TIME_SLOTS.includes(selectedTime)) {
+      notify('Choose an available appointment time');
+      return;
+    }
     if (busy) return;
     setBusy(true);
     try {
-      const booking = await api('/bookings', { method: 'POST', body: { ...formData, service: serviceId, date: selectedDate, time: selectedTime } });
+      const booking = await api('/bookings', {
+        method: 'POST',
+        body: { ...formData, service: serviceId, date: selectedDate, time: selectedTime },
+      });
       notify('Booking reserved');
       navigate(`/payment/${booking.id}`);
-    } catch (error) { notify(error.message); availability.reload(); } finally { setBusy(false); }
+    } catch (error) {
+      notify(error.message);
+      availability.reload();
+    } finally {
+      setBusy(false);
+    }
   };
 
   const panelVariants = {
     enter: (dir) => ({ x: dir === 'forward' ? 60 : -60, opacity: 0 }),
     center: { x: 0, opacity: 1, transition: { duration: 0.35, ease: 'easeOut' } },
-    exit: (dir) => ({ x: dir === 'forward' ? -60 : 60, opacity: 0, transition: { duration: 0.25, ease: 'easeIn' } }),
+    exit: (dir) => ({
+      x: dir === 'forward' ? -60 : 60,
+      opacity: 0,
+      transition: { duration: 0.25, ease: 'easeIn' },
+    }),
   };
 
-  if (serviceResource.loading || serviceResource.error) return <DataState loading={serviceResource.loading} error={serviceResource.error} retry={serviceResource.reload} />;
+  if (serviceResource.loading || serviceResource.error)
+    return (
+      <DataState
+        loading={serviceResource.loading}
+        error={serviceResource.error}
+        retry={serviceResource.reload}
+      />
+    );
 
   return (
     <motion.div
@@ -72,7 +94,6 @@ const BookingDetails = () => {
 
       {/* Main Content */}
       <div className="relative z-10 w-full max-w-5xl flex flex-col md:flex-row gap-8 items-stretch">
-
         {/* Left Panel — Calendar or Time Picker */}
         <div className="w-full md:w-1/2 overflow-hidden">
           <AnimatePresence mode="wait" custom={step === 'time' ? 'forward' : 'backward'}>
@@ -87,7 +108,19 @@ const BookingDetails = () => {
                 className="glass-panel p-8 flex flex-col h-full"
               >
                 <h3 className="text-3xl font-serif text-white mb-6">Choose your date</h3>
-                <input aria-label="Appointment date" type="date" min={new Date().toLocaleDateString('en-CA')} value={selectedDate} onChange={event => { if (event.target.value) { setSelectedDate(event.target.value); setSelectedTime(null); } }} className="p-4 rounded-xl w-full" />
+                <input
+                  aria-label="Appointment date"
+                  type="date"
+                  min={new Date().toLocaleDateString('en-CA')}
+                  value={selectedDate}
+                  onChange={(event) => {
+                    if (event.target.value) {
+                      setSelectedDate(event.target.value);
+                      setSelectedTime(null);
+                    }
+                  }}
+                  className="p-4 rounded-xl w-full"
+                />
 
                 <div className="mt-auto pt-8 flex justify-center">
                   <button
@@ -123,16 +156,18 @@ const BookingDetails = () => {
 
                 {/* Time Slot Grid */}
                 <div className="grid grid-cols-3 gap-3 text-center text-white">
-                  <DataState loading={availability.loading} error={availability.error} empty={!TIME_SLOTS.length} retry={availability.reload} />
+                  <DataState
+                    loading={availability.loading}
+                    error={availability.error}
+                    empty={!TIME_SLOTS.length}
+                    retry={availability.reload}
+                  />
                   {TIME_SLOTS.map((slot) => (
                     <div
                       key={slot}
                       onClick={() => setSelectedTime(slot)}
                       className={`py-2 px-1 rounded-full cursor-pointer transition-colors hover:bg-white/20 text-sm font-medium
-                        ${selectedTime === slot
-                          ? 'text-red-500 font-bold bg-white/10'
-                          : ''
-                        }`}
+                        ${selectedTime === slot ? 'text-red-500 font-bold bg-white/10' : ''}`}
                     >
                       {slot}
                     </div>
@@ -173,7 +208,8 @@ const BookingDetails = () => {
                 <input
                   type="text"
                   name="ownerName"
-                  minLength={2} maxLength={80}
+                  minLength={2}
+                  maxLength={80}
                   required
                   value={formData.ownerName}
                   onChange={handleChange}
@@ -185,7 +221,7 @@ const BookingDetails = () => {
                 <input
                   type="tel"
                   name="phoneNumber"
-                  pattern="[+0-9 ()-]{7,20}"
+                  pattern={'[+0-9 \\(\\)\\-]{7,20}'}
                   required
                   value={formData.phoneNumber}
                   onChange={handleChange}

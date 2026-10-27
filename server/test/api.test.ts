@@ -14,16 +14,38 @@ beforeAll(async () => {
   process.env.UPLOAD_DIR = '/tmp/pawfolio-test-uploads';
   app = (await import('../src/app.js')).app;
   await mongoose.connect(process.env.MONGO_URI);
-  const { User, Post, Booking, Category, Service, Payment } = await import('../src/models/index.js');
+  const { User, Post, Booking, Category, Service, Payment } =
+    await import('../src/models/index.js');
   await Promise.all([User.init(), Post.init(), Booking.init(), Payment.init()]);
-  await Category.create({ _id: 'veterinarian', title: 'Veterinarian', image: 'https://example.com/vet.jpg', path: '/vets' });
-  await Service.create({ _id: 'v1', name: 'VetCare', category: 'veterinarian', image: 'https://example.com/vet.jpg', price: 8500 });
+  await Category.create({
+    _id: 'veterinarian',
+    title: 'Veterinarian',
+    image: 'https://example.com/vet.jpg',
+    path: '/vets',
+  });
+  await Service.create({
+    _id: 'v1',
+    name: 'VetCare',
+    category: 'veterinarian',
+    image: 'https://example.com/vet.jpg',
+    price: 8500,
+  });
 }, 120000);
-afterAll(async () => { await mongoose.disconnect(); await mongo?.stop(); });
-const credentials = { name: 'Test Owner', email: 'owner@example.com', password: 'test-password-123' };
+afterAll(async () => {
+  await mongoose.disconnect();
+  await mongo?.stop();
+});
+const credentials = {
+  name: 'Test Owner',
+  email: 'owner@example.com',
+  password: 'test-password-123',
+};
 describe('authentication', () => {
   it('validates registration, rejects role injection and duplicates, hashes passwords, and manages cookie auth', async () => {
-    await request(app).post('/api/v1/auth/register').send({ ...credentials, role: 'admin' }).expect(400);
+    await request(app)
+      .post('/api/v1/auth/register')
+      .send({ ...credentials, role: 'admin' })
+      .expect(400);
     const agent = request.agent(app);
     const registration = await agent.post('/api/v1/auth/register').send(credentials).expect(201);
     expect(registration.body.data.password).toBeUndefined();
@@ -36,22 +58,45 @@ describe('authentication', () => {
     await agent.get('/api/v1/auth/me').expect(200);
     await agent.post('/api/v1/auth/logout').send({}).expect(200);
     await agent.get('/api/v1/auth/me').expect(401);
-    await agent.post('/api/v1/auth/login').send({ email: credentials.email, password: 'bad-password' }).expect(401);
+    await agent
+      .post('/api/v1/auth/login')
+      .send({ email: credentials.email, password: 'bad-password' })
+      .expect(401);
     const login = await agent.post('/api/v1/auth/login').send(credentials).expect(400);
     expect(login.body.success).toBe(false); // extra name is rejected
-    await agent.post('/api/v1/auth/login').send({ email: credentials.email, password: credentials.password }).expect(200);
+    await agent
+      .post('/api/v1/auth/login')
+      .send({ email: credentials.email, password: credentials.password })
+      .expect(200);
   });
   it('rejects foreign origins', async () => {
-    await request(app).post('/api/v1/auth/logout').set('Origin', 'https://evil.example').send({}).expect(403);
+    await request(app)
+      .post('/api/v1/auth/logout')
+      .set('Origin', 'https://evil.example')
+      .send({})
+      .expect(403);
   });
 });
 describe('posts CRUD and ownership', () => {
   it('creates, reads, edits, likes and deletes own posts while isolating another user', async () => {
-    const owner = request.agent(app), other = request.agent(app);
-    await owner.post('/api/v1/auth/login').send({ email: credentials.email, password: credentials.password }).expect(200);
-    await other.post('/api/v1/auth/register').send({ ...credentials, email: 'other@example.com' }).expect(201);
-    await request(app).post('/api/v1/posts').send({ image: 'https://example.com/dog.jpg' }).expect(401);
-    const created = await owner.post('/api/v1/posts').send({ image: 'https://example.com/dog.jpg', caption: 'Hello' }).expect(201);
+    const owner = request.agent(app),
+      other = request.agent(app);
+    await owner
+      .post('/api/v1/auth/login')
+      .send({ email: credentials.email, password: credentials.password })
+      .expect(200);
+    await other
+      .post('/api/v1/auth/register')
+      .send({ ...credentials, email: 'other@example.com' })
+      .expect(201);
+    await request(app)
+      .post('/api/v1/posts')
+      .send({ image: 'https://example.com/dog.jpg' })
+      .expect(401);
+    const created = await owner
+      .post('/api/v1/posts')
+      .send({ image: 'https://example.com/dog.jpg', caption: 'Hello' })
+      .expect(201);
     const id = created.body.data.id;
     await other.get(`/api/v1/posts/${id}`).expect(404);
     await other.patch(`/api/v1/posts/${id}`).send({ caption: 'Stolen' }).expect(404);
@@ -69,18 +114,45 @@ describe('posts CRUD and ownership', () => {
 describe('booking and catalog', () => {
   it('uses server prices, prevents concurrent conflicts, confirms demo payments and enforces admin access', async () => {
     const owner = request.agent(app);
-    await owner.post('/api/v1/auth/login').send({ email: credentials.email, password: credentials.password });
-    await owner.post('/api/v1/services').send({ id: 'x', name: 'Service', category: 'veterinarian', image: 'https://example.com/a.jpg', price: 1 }).expect(403);
-    const date = new Date(Date.now() + 86400000 * 2).toISOString().slice(0,10);
-    const body = { service: 'v1', ownerName: 'Test Owner', phoneNumber: '+1 555 1234567', email: credentials.email, date, time: '10:00 AM' };
-    await owner.post('/api/v1/bookings').send({ ...body, price: 1 }).expect(400);
-    const results = await Promise.all([owner.post('/api/v1/bookings').send(body), owner.post('/api/v1/bookings').send(body)]);
-    expect(results.map(r => r.status).sort()).toEqual([201,409]);
-    const booking = results.find(r => r.status === 201)!.body.data;
+    await owner
+      .post('/api/v1/auth/login')
+      .send({ email: credentials.email, password: credentials.password });
+    await owner
+      .post('/api/v1/services')
+      .send({
+        id: 'x',
+        name: 'Service',
+        category: 'veterinarian',
+        image: 'https://example.com/a.jpg',
+        price: 1,
+      })
+      .expect(403);
+    const date = new Date(Date.now() + 86400000 * 2).toISOString().slice(0, 10);
+    const body = {
+      service: 'v1',
+      ownerName: 'Test Owner',
+      phoneNumber: '+1 555 1234567',
+      email: credentials.email,
+      date,
+      time: '10:00 AM',
+    };
+    await owner
+      .post('/api/v1/bookings')
+      .send({ ...body, price: 1 })
+      .expect(400);
+    const results = await Promise.all([
+      owner.post('/api/v1/bookings').send(body),
+      owner.post('/api/v1/bookings').send(body),
+    ]);
+    expect(results.map((r) => r.status).sort()).toEqual([201, 409]);
+    const booking = results.find((r) => r.status === 201)!.body.data;
     expect(booking.price).toBe(8500);
     const available = await owner.get(`/api/v1/services/v1/availability?date=${date}`).expect(200);
     expect(available.body.data).not.toContain('10:00 AM');
-    await owner.post(`/api/v1/bookings/${booking.id}/payment`).send({ cardNumber: '1234' }).expect(400);
+    await owner
+      .post(`/api/v1/bookings/${booking.id}/payment`)
+      .send({ cardNumber: '1234' })
+      .expect(400);
     await owner.post(`/api/v1/bookings/${booking.id}/payment`).send({}).expect(201);
     await owner.post(`/api/v1/bookings/${booking.id}/payment`).send({}).expect(409);
     await owner.delete(`/api/v1/bookings/${booking.id}`).expect(409);
@@ -94,4 +166,122 @@ describe('booking and catalog', () => {
     expect(docs.body.data.openapi).toBe('3.0.3');
     await request(app).get('/api/docs/').expect(200);
   });
+});
+
+describe('uploads, notifications and profile validation', () => {
+  it('validates images, rejects extra multipart fields and isolates upload deletion', async () => {
+    const owner = request.agent(app),
+      other = request.agent(app);
+    await owner
+      .post('/api/v1/auth/login')
+      .send({ email: credentials.email, password: credentials.password })
+      .expect(200);
+    await other
+      .post('/api/v1/auth/login')
+      .send({ email: 'other@example.com', password: credentials.password })
+      .expect(200);
+    await owner
+      .post('/api/v1/uploads')
+      .attach('image', Buffer.from('<script>bad</script>'), {
+        filename: 'fake.png',
+        contentType: 'image/png',
+      })
+      .expect(400);
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aBZkAAAAASUVORK5CYII=',
+      'base64',
+    );
+    await owner
+      .post('/api/v1/uploads')
+      .field('owner', 'someone-else')
+      .attach('image', png, { filename: 'pet.png', contentType: 'image/png' })
+      .expect(400);
+    const uploaded = await owner
+      .post('/api/v1/uploads')
+      .attach('image', png, { filename: 'pet.png', contentType: 'image/png' })
+      .expect(201);
+    expect(uploaded.body.data.url).toMatch(/^\/uploads\/[\w-]+\.png$/);
+    await request(app).get(uploaded.body.data.url).expect(200);
+    await other.delete(`/api/v1/uploads/${uploaded.body.data.id}`).expect(404);
+    await owner.delete(`/api/v1/uploads/${uploaded.body.data.id}`).expect(200);
+    await request(app).get(uploaded.body.data.url).expect(404);
+  });
+  it('updates own profile, rejects privilege escalation and persists notification read status', async () => {
+    const owner = request.agent(app);
+    await owner
+      .post('/api/v1/auth/login')
+      .send({ email: credentials.email, password: credentials.password })
+      .expect(200);
+    await owner.patch('/api/v1/users/me').send({ role: 'admin' }).expect(400);
+    await owner
+      .patch('/api/v1/users/me')
+      .send({ name: 'Updated Owner', bio: 'Pet lover', avatar: '' })
+      .expect(200);
+    expect((await owner.get('/api/v1/auth/me')).body.data.name).toBe('Updated Owner');
+    await owner
+      .post('/api/v1/notifications')
+      .send({ title: 'Reminder', desc: 'A test reminder' })
+      .expect(201);
+    await owner.patch('/api/v1/notifications/read-all').send({}).expect(200);
+    const notifications = await owner.get('/api/v1/notifications').expect(200);
+    expect(notifications.body.data.items.every((item: { read: boolean }) => item.read)).toBe(true);
+  });
+  it('lets an admin manage the catalog and rejects nonexistent category references', async () => {
+    const { User } = await import('../src/models/index.js');
+    await User.updateOne({ email: 'other@example.com' }, { role: 'admin' });
+    const admin = request.agent(app);
+    await admin
+      .post('/api/v1/auth/login')
+      .send({ email: 'other@example.com', password: credentials.password })
+      .expect(200);
+    await admin
+      .post('/api/v1/categories')
+      .send({
+        id: 'test-category',
+        title: 'Test category',
+        image: 'https://example.com/pet.jpg',
+        path: '/vets',
+      })
+      .expect(201);
+    await admin
+      .post('/api/v1/services')
+      .send({
+        id: 'test-service',
+        name: 'Test service',
+        category: 'missing-category',
+        image: 'https://example.com/pet.jpg',
+        price: 1500,
+      })
+      .expect(400);
+    await admin
+      .post('/api/v1/services')
+      .send({
+        id: 'test-service',
+        name: 'Test service',
+        category: 'test-category',
+        image: 'https://example.com/pet.jpg',
+        price: 1500,
+      })
+      .expect(201);
+    await admin.patch('/api/v1/services/test-service').send({ price: 2000 }).expect(200);
+    await admin.delete('/api/v1/categories/test-category').expect(409);
+    await admin.delete('/api/v1/services/test-service').expect(200);
+    await admin.delete('/api/v1/categories/test-category').expect(200);
+  });
+});
+
+it('blocks demo confirmations in production', async () => {
+  const { env } = await import('../src/config/env.js');
+  const agent = request.agent(app);
+  await agent
+    .post('/api/v1/auth/login')
+    .send({ email: credentials.email, password: credentials.password })
+    .expect(200);
+  const original = env.NODE_ENV;
+  env.NODE_ENV = 'production';
+  try {
+    await agent.post('/api/v1/bookings/000000000000000000000001/payment').send({}).expect(403);
+  } finally {
+    env.NODE_ENV = original;
+  }
 });

@@ -39,3 +39,10 @@ Collections support bounded pagination; services and posts support search and fi
 - Catalog is administrator managed; posts/bookings/uploads/profiles/notifications are owner managed.
 - Social counts are derived from references; no fabricated follower history is seeded.
 - Local uploads for development, storage adapter boundary for future Cloudinary integration.
+
+## Implementation decisions recorded during delivery
+- Retained original service/category order with seeded sortOrder fields.
+- Added `dev:memory` for a seeded disposable local database when MongoDB is unavailable.
+- Demo payment receipts are immutable; creation occurs through booking confirmation and receipt reads are owner-only.
+- Used schema-inferred TypeScript record types to keep model types synchronized with Mongoose definitions.
+- Kept one npm workspace lockfile; no generated secrets or environment files are tracked.

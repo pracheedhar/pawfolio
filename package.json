@@ -12,10 +12,14 @@
     "lint": "npm run lint --workspaces",
     "test": "npm run test --workspaces",
     "seed": "npm run seed -w server",
-    "format": "prettier --write server/src server/test"
+    "format": "prettier --write server/src server/test",
+    "dev:memory": "concurrently -k \"npm run dev -w client\" \"npm run dev:memory -w server\""
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
     "prettier": "^3.5.3"
+  },
+  "engines": {
+    "node": ">=22.14.0"
   }
 }
