@@ -60,8 +60,12 @@ Server examples are in `server/.env.example`; Vite examples are in `client/.env.
 | `MONGO_URI` | MongoDB connection string, required |
 | `JWT_SECRET` | Random signing secret, minimum 32 characters, required |
 | `JWT_EXPIRES_IN` | Token lifetime, e.g. `7d`, `12h`, `30m` |
-| `CLIENT_URL` | Exact allowed client origin, default `http://localhost:5173` |
+| `CLIENT_URL` | Exact frontend origin, default `http://localhost:5173`; set to the Vercel production HTTPS origin in production |
 | `NODE_ENV` | `development`, `test`, or `production` |
+| `PROXY_SECRET` | Private shared Vercel/Render header secret; required in production, omit locally |
+| `BACKEND_URL` | Vercel-only setting: HTTPS Render origin without trailing slash |
+| `TRUST_PROXY_HOPS` | Trusted hosting proxy hops, default 0; included Vercel + Render setup uses 2 |
+| `ADMIN_EMAIL`, `ADMIN_NAME`, `ADMIN_PASSWORD` | One-time production bootstrap; remove the password after setup |
 | `UPLOAD_DIR` | Local image directory, default `uploads` relative to server working directory |
 | `UPLOAD_MAX_BYTES` | File size limit, default 5242880 |
 | `UPLOAD_PROVIDER` | `local`; other values fail validation until an adapter is implemented |
@@ -80,6 +84,7 @@ Never commit real `.env` files, production secrets, upload contents, or card dat
 | `npm run dev` | Start client and API concurrently; requires configured MongoDB/env |
 | `npm run dev:memory` | Start both with disposable seeded MongoDB |
 | `npm run seed` | Idempotent development seed |
+| `npm run setup:production` | Initialize catalog/admin without demo records; requires a production build/env |
 | `npm run lint` | Lint both workspaces |
 | `npm run build` | Build client to `client/dist`, API to `server/dist` |
 | `npm test` | Client API wrapper tests and server integration tests |
@@ -138,11 +143,13 @@ Open http://localhost:8080. MongoDB and uploaded images use named volumes. The C
 
 ## Deployment
 
+**Selected deployment: Vercel frontend + Render API + MongoDB Atlas.** Follow [DEPLOYMENT.md](DEPLOYMENT.md) for the included Vercel proxy routing, Render Blueprint, persistent uploads, production administrator setup, and verification steps. Browser API requests stay on the Vercel domain for login-cookie compatibility.
+
 - **Vercel / Netlify frontend:** build `npm run build -w client` from root; publish `client/dist`; set `VITE_API_URL` at build time. Add an SPA fallback (`/*` → `/index.html`) for React Router deep links. Prefer a same-origin `/api` and `/uploads` reverse proxy, or use frontend/API custom domains on the same site.
 - **Render / Railway API:** install at root, run `npm run build -w server`, run with working directory `server` and `node dist/server.js` (or root `npm start -w server`). Configure all required environment values and a persistent upload disk. Listen on supplied `PORT`; point health checks to `/api/health`.
-- **MongoDB Atlas:** set `MONGO_URI`, configure an application database user and network access, use TLS. Provision the first production administrator through controlled database administration (the development seed is disabled in production). Build indexes before serving booking traffic. Replica-set transactions would be appropriate when adding real payments.
+- **MongoDB Atlas:** set `MONGO_URI`, configure an application database user and network access, use TLS. Provision the first production administrator with `npm run setup:production` and private `ADMIN_EMAIL` / `ADMIN_PASSWORD` values (see DEPLOYMENT.md; the development seed is disabled in production). Build indexes before serving booking traffic. Replica-set transactions would be appropriate when adding real payments.
 - Production cookies are `Secure`, `HttpOnly`, `SameSite=Lax`; unrelated frontend/API domains will not support authenticated fetches reliably. Use a same-site domain arrangement or same-origin proxy. Foreign-origin mutation requests are rejected.
-- Configure proxy trust explicitly for your hosting topology before relying on per-client rate limits behind a load balancer. The default does not trust arbitrary forwarded headers.
+- Configure proxy trust explicitly for your hosting topology before relying on per-client rate limits behind a load balancer. The default does not trust arbitrary forwarded headers. The supplied split-hosting setup additionally requires the private proxy secret; health checks remain public.
 
 ## Verification and remaining work
 

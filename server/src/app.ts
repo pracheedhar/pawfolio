@@ -1,3 +1,4 @@
+import { proxyGuard } from './middleware/proxy.js';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -17,14 +18,17 @@ import { openapi } from './config/openapi.js';
 
 export const app = express();
 app.disable('x-powered-by');
+// Trust only the configured number of hosting proxy hops, never arbitrary forwarded headers.
+app.set('trust proxy', env.TRUST_PROXY_HOPS || false);
 app.use(
-  helmet(),
+  helmet({ contentSecurityPolicy: { directives: { imgSrc: ["'self'", 'data:', 'https:'] } } }),
   cors({ origin: env.CLIENT_URL, credentials: true }),
   compression(),
   cookieParser(),
   express.json({ limit: '100kb' }),
 );
 app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+app.use(proxyGuard);
 // Cookie-authenticated mutations must originate from the configured frontend.
 app.use((req, _res, next) => {
   if (

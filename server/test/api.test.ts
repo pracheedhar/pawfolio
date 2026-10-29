@@ -285,3 +285,81 @@ it('blocks demo confirmations in production', async () => {
     env.NODE_ENV = original;
   }
 });
+
+it('initializes a production administrator and catalog without demo accounts and preserves edits', async () => {
+  const { setupProduction } = await import('../src/services/productionSetup.js');
+  const { User, Category, Service, Post } = await import('../src/models/index.js');
+  const input = {
+    ADMIN_EMAIL: 'real-admin@example.com',
+    ADMIN_PASSWORD: 'production-setup-test-password',
+  };
+  const usersBefore = await User.countDocuments();
+  const postsBefore = await Post.countDocuments();
+  expect((await setupProduction(input)).administratorCreated).toBe(true);
+  const administrator = await User.findOne({ email: input.ADMIN_EMAIL }).select('+password');
+  expect(administrator!.role).toBe('admin');
+  expect(administrator!.password).not.toBe(input.ADMIN_PASSWORD);
+  await Service.updateOne({ _id: 'v1' }, { price: 12345 });
+  expect(
+    (await setupProduction({ ...input, ADMIN_PASSWORD: 'different-password-preserved' }))
+      .administratorCreated,
+  ).toBe(false);
+  expect((await User.findById(administrator!._id).select('+password'))!.password).toBe(
+    administrator!.password,
+  );
+  expect(await User.countDocuments()).toBe(usersBefore + 1);
+  expect(await Post.countDocuments()).toBe(postsBefore);
+  expect(await Category.countDocuments()).toBe(3);
+  expect(await Service.countDocuments()).toBe(12);
+  expect((await Service.findById('v1'))!.price).toBe(12345);
+  await expect(setupProduction({ ...input, ADMIN_EMAIL: credentials.email })).rejects.toMatchObject(
+    { status: 409 },
+  );
+});
+
+it('rejects insecure production environment settings and malformed database URLs', async () => {
+  const { environmentSchema } = await import('../src/config/env.js');
+  const valid = {
+    MONGO_URI: 'mongodb://127.0.0.1/pawfolio',
+    JWT_SECRET: 'test-only-generated-production-key-with-32-characters',
+    NODE_ENV: 'production',
+    CLIENT_URL: 'https://pawfolio.example',
+    PROXY_SECRET: 'test-only-proxy-secret-with-32-characters',
+  };
+  expect(environmentSchema.safeParse(valid).success).toBe(true);
+  expect(
+    environmentSchema.safeParse({ ...valid, CLIENT_URL: 'http://localhost:5173' }).success,
+  ).toBe(false);
+  expect(
+    environmentSchema.safeParse({
+      ...valid,
+      JWT_SECRET: 'replace-with-a-random-secret-at-least-32-characters',
+    }).success,
+  ).toBe(false);
+  expect(
+    environmentSchema.safeParse({ ...valid, MONGO_URI: 'MONGO_URI=mongodb://localhost/pawfolio' })
+      .success,
+  ).toBe(false);
+  expect(environmentSchema.safeParse({ ...valid, TRUST_PROXY_HOPS: 'true' }).success).toBe(false);
+});
+
+it('requires the configured proxy secret while leaving Render health probes public', async () => {
+  const { env } = await import('../src/config/env.js');
+  const original = env.PROXY_SECRET;
+  env.PROXY_SECRET = 'proxy-test-secret-with-at-least-32-characters';
+  try {
+    await request(app).get('/api/health').expect(200);
+    await request(app).get('/api/v1/services').expect(403);
+    await request(app)
+      .get('/api/v1/services')
+      .set('x-pawfolio-proxy-secret', 'wrong-secret')
+      .expect(403);
+    await request(app)
+      .get('/api/v1/services')
+      .set('x-pawfolio-proxy-secret', env.PROXY_SECRET)
+      .expect(200);
+    await request(app).get('/uploads/missing.png').expect(403);
+  } finally {
+    env.PROXY_SECRET = original;
+  }
+});

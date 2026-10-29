@@ -13,7 +13,8 @@
     "test": "npm run test --workspaces",
     "seed": "npm run seed -w server",
     "format": "prettier --write server/src server/test",
-    "dev:memory": "concurrently -k \"npm run dev -w client\" \"npm run dev:memory -w server\""
+    "dev:memory": "concurrently -k \"npm run dev -w client\" \"npm run dev:memory -w server\"",
+    "setup:production": "npm run setup:production -w server"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

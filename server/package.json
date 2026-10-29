@@ -10,7 +10,8 @@
     "lint": "eslint src test",
     "test": "vitest run --maxWorkers=1",
     "seed": "tsx src/seed.ts",
-    "dev:memory": "tsx scripts/dev-memory.ts"
+    "dev:memory": "tsx scripts/dev-memory.ts",
+    "setup:production": "node dist/setup.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

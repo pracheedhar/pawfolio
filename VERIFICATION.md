@@ -27,3 +27,16 @@
 - External original image hosts remain dependencies; browser verification exercised the existing imagery but does not guarantee their future availability.
 - The frontend retains JavaScript JSX; strict TypeScript applies to the new server. Follow counts derive from stored references; no follow-management UI/API was invented.
 - Demo booking receipt writes use atomic status/version checks and compensation on receipt failure. Real financial flows and multi-collection account cleanup should use transactions and durable workflows before production billing.
+
+## Essential deployment fixes — 28 October 2026
+
+- User selected **Vercel frontend + Render API**. Added native `vercel.mjs` routing for API/uploads before static files and SPA fallback, using a private shared request header. Render builds only the API and supplies a persistent upload disk.
+- Added configurable proxy-hop trust protected by a timing-safe shared-secret check. Health probes remain public. Secrets are resolved by Vercel routing, not included in the browser bundle.
+- Added production HTTPS/origin/signing-secret validation and malformed MongoDB URI rejection; corrected the duplicated URI prefix in the example file.
+- API startup waits for database indexes, including booking-slot uniqueness.
+- Added idempotent `npm run setup:production` without demo records, preserving existing admin passwords/catalog edits.
+- Removed an optional routing SDK after its dependency audit found unpatched issues; native Vercel configuration requires no new dependencies.
+- Deployment is not published. Final hosting/network/disk/cookie checks require the actual Vercel and Render projects.
+- Real payments remain deliberately disabled in production. Local `.env` contents and live Atlas data were not changed.
+
+- Selected split-deployment checks: lint/build pass; **17 tests pass** (3 client, 14 server), including routing-secret injection, missing configuration failures, backend proxy protection, and production bootstrap idempotence. Render YAML parses; all Vercel configuration fields used here validate against the published Vercel schema.

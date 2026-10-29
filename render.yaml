@@ -1,0 +1,37 @@
+# API only. The frontend is deployed separately on Vercel.
+# Paid service/disk keep uploaded photos across deployments; review cost before creating.
+services:
+  - type: web
+    name: pawfolio-api
+    runtime: node
+    plan: starter
+    buildCommand: npm ci --include=dev && npm run build -w server
+    startCommand: npm start -w server
+    healthCheckPath: /api/health
+    disk:
+      name: pawfolio-uploads
+      mountPath: /var/data/pawfolio
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 22.23.4
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY_HOPS
+        value: "2"
+      - key: UPLOAD_DIR
+        value: /var/data/pawfolio/uploads
+      - key: UPLOAD_PROVIDER
+        value: local
+      - key: TZ
+        value: Asia/Kolkata
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PROXY_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: MONGO_URI
+        sync: false
+      - key: CLIENT_URL
+        sync: false
